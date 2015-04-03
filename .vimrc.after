@@ -1,0 +1,118 @@
+" Quickly edit/reload the vimrc file
+nmap <silent> <leader>ev :e $MYVIMRC<CR>
+nmap <silent> <leader>tv :tabedit $MYVIMRC<CR>
+nmap <silent> <leader>sv :so $MYVIMRC<CR>
+
+color getafe
+
+" Toggle list and number.
+if (&relativenumber == 1)
+    nnoremap <Leader>$ :set list! number!<CR>
+else
+   nnoremap <Leader>$ :set list! relativenumber!<CR>
+endif
+
+" Remove all trailing whitespace.
+nnoremap <Leader>W :%s/\s\+$//<CR>:let @/=''<CR>
+
+" Powerline settings.
+if has("multi_byte")
+    let g:Powerline_symbols="unicode"
+endif
+
+" Run tests.
+function! RunTestUnderCursor()
+    :write
+    if (match(expand("%"), '_spec.rb$') != -1) || (match(expand("%"), '.feature$') != -1)
+        let t:my_test_file = @%
+        let t:my_test_line_number = line('.')
+    endif
+
+    if (!exists("t:my_test_file") || !exists("t:my_test_line_number"))
+        echo "ERROR: test file, or test line number does not exist."
+        return
+    endif
+
+    if (match(t:my_test_file, '_spec.rb') != -1)
+        execute "!clear; bundle exec rspec -f d " . t:my_test_file . ":" . t:my_test_line_number
+    else
+        execute "!clear; bundle exec cucumber " . t:my_test_file . ":" . t:my_test_line_number . " -r features"
+    endif
+endfunction
+
+function! RunTestFile()
+    :write
+    if (match(expand("%"), '_spec.rb$') != -1) || (match(expand("%"), '.feature$') != -1)
+        let t:my_test_file = @%
+    endif
+
+    if !exists("t:my_test_file")
+        echo "ERROR: test file does not exist."
+        return
+    endif
+
+    if (match(t:my_test_file, '_spec.rb') != -1)
+        execute "!clear; bundle exec rspec -f d " . t:my_test_file
+    else
+        execute "!clear; bundle exec cucumber " . t:my_test_file . " -r features"
+    endif
+endfunction
+
+nnoremap <Leader>T :call RunTestFile()<CR>
+nnoremap <Leader>t :call RunTestUnderCursor()<CR>
+
+augroup ag_nerdtree
+    autocmd!
+    autocmd FileType nerdtree setlocal nolist
+    if (&relativenumber == 1)
+        autocmd FileType nerdtree setlocal nonumber
+    else
+       autocmd FileType nerdtree setlocal norelativenumber
+    endif
+augroup END
+
+
+" Git Gutter settings.
+let g:gitgutter_enabled = 0
+nmap <Leader>gg :GitGutterToggle<CR>
+highlight clear SignColumn
+
+" Set up some number stuff...
+
+" function for switching between number and relativenumber
+function! NumberToggle()
+    if(&relativenumber == 1)
+        set number
+    else
+        set relativenumber
+    endif
+endfunc
+
+nnoremap <C-n> :call NumberToggle()<cr>
+
+" Auto switch number based on events
+:au FocusLost * :set number
+:au FocusGained * :set relativenumber
+
+autocmd InsertEnter * :set number
+autocmd InsertLeave * :set relativenumber
+
+" matchit and ruby matchit
+runtime macros/matchit.vim
+
+" Matchit support:
+if exists("loaded_matchit")
+    if !exists("b:match_words")
+        let b:match_ignorecase = 0
+        let b:match_words =
+\ '\%(\%(\%(^\|[;=]\)\s*\)\@<=\%(class\|module\|while\|begin\|until\|for\|if\|unless\|def\|case\)\|\<do\)\>:' .
+\ '\<\%(else\|elsif\|ensure\|rescue\|when\)\>:\%(^\|[^.]\)\@<=\<end\>'
+    endif
+endif
+
+"" syntastic
+"let g:syntastic_auto_loc_list=1
+" let g:syntastic_disabled_filetypes=['html']
+"let g:syntastic_enable_signs=1
+"let g:syntastic_check_on_open=1
+"let g:syntastic_enable_signs=1

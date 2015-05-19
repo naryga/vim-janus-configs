@@ -3,7 +3,26 @@ nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>tv :tabedit $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
 
-color getafe
+
+" some badwolf specific settings:
+" Make the gutters darker than the background.
+ let g:badwolf_darkgutter = 1
+
+" Make the tab line much lighter than the background.
+ let g:badwolf_tabline = 3
+try
+  if has('gui_running')
+    set background=light
+    colorscheme github
+  elseif &t_Co > 15
+    set background=dark
+    "color getafe
+    color badwolf
+    "color herald
+    "color moria
+
+  endif
+endtry
 
 " Toggle list and number.
 if (&relativenumber == 1)
@@ -71,6 +90,9 @@ augroup ag_nerdtree
     endif
 augroup END
 
+" Clear highlighting and redraw.
+nnoremap <C-l> :nohlsearch<CR><C-l>
+inoremap <C-l> <C-o>:nohlsearch<CR>
 
 " Git Gutter settings.
 let g:gitgutter_enabled = 0
